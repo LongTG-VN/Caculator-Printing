@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Công cụ tính giá in ấn & thi công</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+
+  <style>
+    /* ĐỊNH NGHĨA BIẾN MÀU SẮC & GIAO DIỆN MẶC ĐỊNH */
+    :root {
+      --color-text-primary: #111827;
+      --color-text-secondary: #4b5563;
+      --color-text-tertiary: #6b7280;
+      --color-text-info: #2563eb;
+      --color-text-success: #16a34a;
+
+      --color-background-primary: #ffffff;
+      --color-background-secondary: #f3f4f6;
+      --color-background-info: #eff6ff;
+
+      --color-border-tertiary: #e5e7eb;
+
+      --border-radius-md: 6px;
+      --border-radius-lg: 10px;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #f9fafb;
+      display: flex;
+      justify-content: center;
+      line-height: 1.5;
+    }
+
+    .wrap {
+      max-width: 700px;
+      width: 100%;
+      padding: 1.5rem;
+      font-size: 15px;
+      color: var(--color-text-primary);
+    }
+
+    /* CSS GỐC CỦA BẠN */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    .tabs {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      margin-bottom: 1rem
+    }
+
+    .tab {
+      padding: 6px 13px;
+      border-radius: var(--border-radius-md);
+      border: 0.5px solid var(--color-border-tertiary);
+      font-size: 13px;
+      cursor: pointer;
+      background: var(--color-background-primary);
+      color: var(--color-text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 500;
+    }
+
+    .tab:hover {
+      background: var(--color-background-secondary);
+    }
+
+    .tab.active {
+      background: var(--color-background-info);
+      color: var(--color-text-info);
+      border-color: transparent
+    }
+
+    .panel {
+      display: none
+    }
+
+    .panel.active {
+      display: block
+    }
+
+    .sec {
+      background: var(--color-background-primary);
+      border: 0.5px solid var(--color-border-tertiary);
+      border-radius: var(--border-radius-lg);
+      padding: 1.25rem;
+      margin-bottom: .75rem;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    .stitle {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      margin-bottom: .9rem
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 9px;
+      align-items: center;
+      flex-wrap: wrap
+    }
+
+    .row label {
+      font-size: 14px;
+      color: var(--color-text-secondary);
+      min-width: 130px;
+      flex-shrink: 0;
+      font-weight: 500;
+    }
+
+    .row input,
+    .row select {
+      flex: 1;
+      min-width: 100px;
+      padding: 6px 10px;
+      border: 1px solid var(--color-border-tertiary);
+      border-radius: var(--border-radius-md);
+      outline: none;
+      font-family: inherit;
+    }
+
+    .row input:focus,
+    .row select:focus {
+      border-color: var(--color-text-info);
+    }
+
+    .row input[type=number] {
+      max-width: 130px
+    }
+
+    .note {
+      font-size: 12px;
+      color: var(--color-text-tertiary);
+      line-height: 1.5;
+      margin: 4px 0 8px 140px
+    }
+
+    .res {
+      background: var(--color-background-secondary);
+      border-radius: var(--border-radius-md);
+      padding: .9rem 1.1rem;
+      margin-top: 1.2rem
+    }
+
+    .rl {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: .5px dashed var(--color-border-tertiary);
+      font-size: 14px
+    }
+
+    .rl:last-child {
+      border-bottom: none;
+      font-weight: 600;
+      font-size: 15px;
+      padding-top: 10px;
+      margin-top: 4px;
+    }
+
+    .rl span:first-child {
+      color: var(--color-text-secondary)
+    }
+
+    .tot {
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--color-text-success)
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="wrap">
+    <h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden">Công cụ tính giá in ấn — bảng
+      hiệu — giấy — tranh điện</h2>
+    <div class="tabs" id="tabs">
+      <button class="tab active" onclick="sw('decal')"><i class="ti ti-printer" aria-hidden="true"></i> In
+        Decal</button>
+      <button class="tab" onclick="sw('tem')"><i class="ti ti-tag" aria-hidden="true"></i> In Tem</button>
+      <button class="tab" onclick="sw('cat')"><i class="ti ti-cut" aria-hidden="true"></i> Cắt Decal</button>
+      <button class="tab" onclick="sw('card')"><i class="ti ti-id-badge" aria-hidden="true"></i> Card Visit</button>
+      <button class="tab" onclick="sw('bang')"><i class="ti ti-layout-board" aria-hidden="true"></i> Bảng Hiệu</button>
+      <button class="tab" onclick="sw('vai')"><i class="ti ti-flag" aria-hidden="true"></i> Vải / Hiflex</button>
+      <button class="tab" onclick="sw('giay')"><i class="ti ti-file-text" aria-hidden="true"></i> In Giấy</button>
+      <button class="tab" onclick="sw('tranh')"><i class="ti ti-photo" aria-hidden="true"></i> Tranh Điện</button>
+      <button class="tab" onclick="sw('phu')"><i class="ti ti-plus" aria-hidden="true"></i> Phụ phí</button>
+    </div>
+
+    <div class="panel active" id="p-decal">
+      <div class="sec">
+        <div class="stitle">In Decal</div>
+        <div class="row"><label>Loại decal</label>
+          <select id="d-loai" onchange="cD()">
+            <option value="70000">Decal thường — 70.000đ/m²</option>
+            <option value="110000">Decal trong/đẹp — 110.000đ/m²</option>
+          </select>
+        </div>
+        <div class="row"><label>Ngang (m)</label><input type="number" id="d-ng" value="0.5" step="0.01" min="0.01"
+            oninput="cD()"></div>
+        <div class="row"><label>Cao (m)</label><input type="number" id="d-cao" value="0.5" step="0.01" min="0.01"
+            oninput="cD()"></div>
+        <div class="row"><label>Số lượng</label><input type="number" id="d-sl" value="1" step="1" min="1"
+            oninput="cD()"></div>
+        <div class="row"><label>Cán màng</label>
+          <select id="d-can" onchange="cD()">
+            <option value="0">Không</option>
+            <option value="50000">Có (+50.000đ/m²)</option>
+          </select>
+        </div>
+        <div id="r-decal" class="res"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="p-tem">
+      <div class="sec">
+        <div class="stitle">In Tem</div>
+        <div class="row"><label>Loại tem</label>
+          <select id="t-loai" onchange="cT()">
+            <option value="khong">Tem không bế — 110.000đ/m²</option>
+            <option value="be">Tem có bế — 120.000đ/m²</option>
+          </select>
+        </div>
+        <div class="row"><label>Ngang (m)</label><input type="number" id="t-ng" value="0.5" step="0.01" min="0.01"
+            oninput="cT()"></div>
+        <div class="row"><label>Cao (m)</label><input type="number" id="t-cao" value="0.5" step="0.01" min="0.01"
+            oninput="cT()"></div>
+        <div class="row"><label>Số lượng</label><input type="number" id="t-sl" value="1" step="1" min="1"
+            oninput="cT()"></div>
+        <div id="r-tem" class="res"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="p-cat">
+      <div class="sec">
+        <div class="stitle">Cắt Decal</div>
+        <div class="row"><label>Kiểu cắt</label>
+          <select id="c-kieu" onchange="cC()">
+            <option value="chuan">Cắt chuẩn — 130.000đ/m²</option>
+            <option value="vien">Cắt + viền (khoán)</option>
+            <option value="le">Cắt lẻ (vô khổ)</option>
+          </select>
+        </div>
+        <div id="c-chuan">
+          <div class="row"><label>Ngang (m)</label><input type="number" id="c-ng" value="0.5" step="0.01" min="0.01"
+              oninput="cC()"></div>
+          <div class="row"><label>Cao (m)</label><input type="number" id="c-cao" value="0.5" step="0.01" min="0.01"
+              oninput="cC()"></div>
+          <div class="row"><label>Số lượng</label><input type="number" id="c-sl" value="1" step="1" min="1"
+              oninput="cC()"></div>
+        </div>
+        <div id="c-vien" style="display:none">
+          <div class="row"><label>Cạnh lớn nhất (m)</label><input type="number" id="c-vcauh" value="0.3" step="0.01"
+              min="0.01" oninput="cC()"></div>
+          <div class="row"><label>Số lượng</label><input type="number" id="c-vsl" value="1" step="1" min="1"
+              oninput="cC()"></div>
+        </div>
+        <div id="c-le" style="display:none">
+          <div class="row"><label>Vô khổ</label>
+            <select id="c-lkho" onchange="cC()">
+              <option value="6">Khổ 6 tấc — 10.000đ/tấc</option>
+              <option value="10">Khổ 1m — 15.000đ/tấc</option>
+            </select>
+          </div>
+          <div class="row"><label>Số tấc</label><input type="number" id="c-ltac" value="5" step="1" min="1"
+              oninput="cC()"></div>
+          <div class="row"><label>Số lượng</label><input type="number" id="c-lsl" value="1" step="1" min="1"
+              oninput="cC()"></div>
+        </div>
+        <div id="r-cat" class="res"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="p-card">
+      <div class="sec">
+        <div class="stitle">In Card Visit</div>
+        <div class="row"><label>Số hộp</label><input type="number" id="cv-hop" value="1" step="1" min="1"
+            oninput="cCV()"></div>
+        <div class="note">1–4 hộp: 70.000đ/hộp &nbsp;|&nbsp; Tròn 5 hộp: 40.000đ/hộp &nbsp;|&nbsp; ≥10 hộp: 24.000đ/hộp
+        </div>
+        <div id="r-card" class="res"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="p-bang">
+      <div class="sec">
+        <div class="stitle">Bảng hiệu / Gia công vật liệu cứng</div>
+        <div class="row"><label>Vật liệu</label>
+          <select id="b-vl" onchange="cB()">
+            <option value="tole-in">Tole — In decal dán</option>
+            <option value="tole-cat">Tole — Cắt decal dán</option>
+            <option value="form-in">Formex — In decal dán</option>
+            <option value="form-cat">Formex — Cắt decal dán</option>
+            <option value="alu-in">Alu — In decal dán</option>
+            <option value="alu-cat">Alu — Cắt decal dán</option>
+            <option value="mica-in">Mica — In decal dán</option>
+            <option value="mica-cat">Mica — Cắt decal dán</option>
+          </select>
+        </div>
+        <div class="row"><label>Ngang (m)</label><input type="number" id="b-ng" value="0.5" step="0.01" min="0.01"
+            oninput="cB()"></div>
+        <div class="row"><label>Cao (m)</label><input type="number" id="b-cao" value="0.5" step="0.01" min="0.01"
+            oninput="cB()"></div>
+        <div class="row"><label>Số lượng</label><input type="number" id="b-sl" value="1" step="1" min="1"
+            oninput="cB()"></div>
+        <div id="r-bang" class="res"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="p-vai">
+      <div class="sec">
+        <div class="stitle">Bảng vải / Hiflex (bảng đứng có khung sắt)</div>
+        <div class="row"><label>Loại vải</label>
+          <select id="v-loai" onchange="cV()">
+            <option value="lua">Lụa thường (Hiflex)</option>
+            <option value="decal">Decal dán vải</option>
+          </select>
+        </div>
+        <div class="row"><label>Khung sắt</label>
+          <select id="v-sat" onchange="cV()">
+            <option value="0">Không có khung</option>
+            <option value="v16">Vuông 16 — 65.000đ/m</option>
+            <option value="v20">Vuông 20 — 85.000đ/m</option>
+            <option value="v25">Vuông 25 — 105.000đ/m</option>
+          </select>
+        </div>
+        <div class="row"><label>Có chân</label>
+          <select id="v-chan" onchange="cV()">
+            <option value="0">Không</option>
+            <option value="1">Có chân (thêm 2 thanh dọc)</option>
+          </select>
+        </div>
+        <div class="row"><label>Ngang (m)</label><input type="number" id="v-ng" value="1" step="0.01" min="0.01"
+            oninput="cV()"></div>
+        <div class="row"><label>Cao (m)</label><input type="number" id="v-cao" value="1" step="0.01" min="0.01"
+            oninput="cV()"></div>
+        <div class="row"><label>Số lượng</label><input type="number" id="v-sl" value="1" step="1" min="1"
+            oninput="cV()"></div>
+        <div class="row"><label>Cán màng</label>
+          <select id="v-can" onchange="cV()">
+            <option value="0">Không</option>
+            <option value="1">Có (+50.000đ/m²)</option>
+          </select>
+        </div>
+        <div id="r-vai" class="res"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="p-giay">
+      <div class="sec">
+        <div class="stitle">In giấy</div>
+        <div class="row"><label>Loại in</label>
+          <select id="g-loai" onchange="cG()">
+            <optgroup label="In giấy lẻ">
+              <option value="giay">In giấy (photocopy)</option>
+              <option value="ep">Ép nhựa</option>
+            </optgroup>
+            <optgroup label="Tờ rơi couche A4">
+              <option value="roi-a4">Tờ rơi khổ A4</option>
+            </optgroup>
+            <optgroup label="Tờ rơi couche A5">
+              <option value="roi-a5">Tờ rơi khổ A5</option>
+            </optgroup>
+            <optgroup label="Bảng tên">
+              <option value="bangten">Bảng tên</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div id="g-giay-fields">
+          <div class="row"><label>Khổ</label>
+            <select id="g-kho" onchange="cG()">
+              <option value="a5">A5</option>
+              <option value="a4">A4</option>
+              <option value="a3">A3</option>
+            </select>
+          </div>
+          <div class="row"><label>Loại giấy</label>
+            <select id="g-giay-tp" onchange="cG()">
+              <option value="day1">Dày — 1 mặt</option>
+              <option value="day2">Dày — 2 mặt</option>
+              <option value="bong1">Bóng dày — 1 mặt</option>
+              <option value="bong2">Bóng dày — 2 mặt</option>
+            </select>
+          </div>
+          <div class="row"><label>Số tờ</label><input type="number" id="g-to" value="1" step="1" min="1" oninput="cG()">
+          </div>
+        </div>
+
+        <div id="g-ep-fields" style="display:none">
+          <div class="row"><label>Khổ</label>
+            <select id="g-ep-kho" onchange="cG()">
+              <option value="a5">A5</option>
+              <option value="a4">A4</option>
+              <option value="a3">A3</option>
+            </select>
+          </div>
+          <div class="row"><label>Số mặt</label>
+            <select id="g-ep-mat" onchange="cG()">
+              <option value="1">1 mặt</option>
+              <option value="2">2 mặt</option>
+            </select>
+          </div>
+          <div class="row"><label>Số tờ</label><input type="number" id="g-ep-to" value="1" step="1" min="1"
+              oninput="cG()"></div>
+        </div>
+
+        <div id="g-roi-a4-fields" style="display:none">
+          <div class="row"><label>Định lượng</label>
+            <select id="g-ra4-dl" onchange="cG()">
+              <option value="0">100g</option>
+              <option value="1">150g</option>
+              <option value="2">200g</option>
+            </select>
+          </div>
+          <div class="row"><label>Số lượng tờ</label>
+            <select id="g-ra4-sl" onchange="cG()">
+              <option value="500">500</option>
+              <option value="1000">1.000</option>
+              <option value="2000">2.000</option>
+              <option value="3000">3.000</option>
+              <option value="5000">5.000</option>
+              <option value="10000">10.000</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="g-roi-a5-fields" style="display:none">
+          <div class="row"><label>Định lượng</label>
+            <select id="g-ra5-dl" onchange="cG()">
+              <option value="0">100g</option>
+              <option value="1">150g</option>
+              <option value="2">200g</option>
+            </select>
+          </div>
+          <div class="row"><label>Số lượng tờ</label>
+            <select id="g-ra5-sl" onchange="cG()">
+              <option value="1000">1.000</option>
+              <option value="2000">2.000</option>
+              <option value="4000">4.000</option>
+              <option value="6000">6.000</option>
+              <option value="10000">10.000</option>
+              <option value="20000">20.000</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="g-bangten-fields" style="display:none">
+          <div class="row"><label>Loại bảng tên</label>
+            <select id="g-bt-loai" onchange="cG()">
+              <option value="35k">Loại 35K (nền trắng)</option>
+              <option value="50k">Loại 50K (nền màu)</option>
+            </select>
+          </div>
+          <div class="row"><label>Số màu</label>
+            <select id="g-bt-mau" onchange="cG()">
+              <option value="lt5">Dưới 5 màu</option>
+              <option value="gt5">Trên 5 màu</option>
+              <option value="gt10">Trên 10 màu</option>
+            </select>
+          </div>
+          <div class="row"><label>Số lượng</label><input type="number" id="g-bt-sl" value="1" step="1" min="1"
+              oninput="cG()"></div>
+        </div>
+
+        <div id="r-giay" class="res"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="p-tranh">
+      <div class="sec">
+        <div class="stitle">Tranh điện / Đèn LED (Minh AD)</div>
+        <div class="row"><label>Khổ tranh</label>
+          <select id="tr-kho" onchange="cTr()">
+            <option value="790000,90000">A4 (20×30cm)</option>
+            <option value="905000,100000">A3 (30×40cm)</option>
+            <option value="1120000,115000">A2 (40×60cm)</option>
+            <option value="1540000,160000">A1 (60×80cm)</option>
+            <option value="1450000,140000">50×70cm</option>
+            <option value="1631000,170000">60×90cm</option>
+            <option value="1654000,139000">30×120cm</option>
+            <option value="1908000,193000">60×120cm</option>
+            <option value="2194000,229000">80×120cm</option>
+          </select>
+        </div>
+        <div class="row"><label>Gói</label>
+          <select id="tr-goi" onchange="cTr()">
+            <option value="full">Khung + đèn + in (Minh AD)</option>
+            <option value="in">Chỉ in (không khung)</option>
+          </select>
+        </div>
+        <div class="row"><label>Số lượng</label><input type="number" id="tr-sl" value="1" step="1" min="1"
+            oninput="cTr()"></div>
+        <div id="r-tranh" class="res"></div>
+      </div>
+      <div class="sec">
+        <div class="stitle">Số nhà (ăn mòn / số nổi)</div>
+        <div class="row"><label>Kích thước</label>
+          <select id="sn-khoct" onchange="cSN()">
+            <option value="25x15">25×15cm</option>
+            <option value="30x20">30×20cm</option>
+            <option value="35x25">35×25cm</option>
+            <option value="40x30">40×30cm</option>
+            <option value="60x40">60×40cm</option>
+          </select>
+        </div>
+        <div class="row"><label>Loại</label>
+          <select id="sn-loai" onchange="cSN()">
+            <option value="anmon">Ăn mòn</option>
+            <option value="noi">Số nổi</option>
+            <option value="chunoi">Chữ + số nổi</option>
+          </select>
+        </div>
+        <div class="row"><label>Số lượng</label><input type="number" id="sn-sl" value="1" step="1" min="1"
+            oninput="cSN()"></div>
+        <div id="r-sn" class="res"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="p-phu">
+      <div class="sec">
+        <div class="stitle">Phụ phí & Dịch vụ khác</div>
+        <div class="row"><label>Dịch vụ</label>
+          <select id="pp-dv" onchange="cPP()">
+            <option value="can">Cán màng (+50.000đ/m²)</option>
+            <option value="lua">Bảng lụa có chân (khoán 650.000đ)</option>
+          </select>
+        </div>
+        <div id="pp-m2r">
+          <div class="row"><label>Diện tích (m²)</label><input type="number" id="pp-m2" value="1" step="0.01" min="0.01"
+              oninput="cPP()"></div>
+        </div>
+        <div id="r-phu" class="res"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    var TABS = ['decal', 'tem', 'cat', 'card', 'bang', 'vai', 'giay', 'tranh', 'phu'];
+    function sw(id) {
+      var btns = document.querySelectorAll('.tab');
+      btns.forEach(function (b, i) { b.classList.toggle('active', TABS[i] === id) });
+      document.querySelectorAll('.panel').forEach(function (p) { p.classList.remove('active') });
+      document.getElementById('p-' + id).classList.add('active');
+    }
+    function fmt(n) { return Math.round(n).toLocaleString('vi-VN') + 'đ' }
+    function f(id) { return parseFloat(document.getElementById(id).value) || 0 }
+    function fi(id) { return parseInt(document.getElementById(id).value) || 1 }
+    function fv(id) { return document.getElementById(id).value }
+    function html(id, s) { document.getElementById(id).innerHTML = s }
+    function row(l, v) { return '<div class="rl"><span>' + l + '</span><span>' + v + '</span></div>' }
+    function rowTot(l, v) { return '<div class="rl"><span>' + l + '</span><span class="tot">' + v + '</span></div>' }
+
+    function cD() {
+      var gia = parseInt(fv('d-loai'));
+      var ng = f('d-ng'), cao = f('d-cao'), sl = fi('d-sl'), can = parseInt(fv('d-can'));
+      var m2 = ng * cao, m2t = m2 * sl, over = m2 > 1, m2calc, note;
+      if (!over) { var mn = Math.min(ng, cao); m2calc = mn * 1 * sl; note = 'Lỡ khổ: cạnh nhỏ (' + mn + 'm) × 1m × ' + sl; }
+      else { m2calc = m2t * 1.2; note = 'Quá khổ: ' + Math.round(m2t * 100) / 100 + ' m² × 1.2 (phụ phí 20%)'; }
+      var tIn = m2calc * gia, tCan = can ? m2calc * can : 0, tot = tIn + tCan;
+      var h = row('Diện tích thực', Math.round(m2t * 100) / 100 + ' m²');
+      h += row('Ghi chú', note);
+      h += row('M² tính giá', Math.round(m2calc * 100) / 100 + ' m²');
+      h += row('Tiền in', fmt(tIn));
+      if (tCan) h += row('Cán màng', fmt(tCan));
+      h += rowTot('Tổng cộng', fmt(tot));
+      html('r-decal', h);
+    }
+
+    function cT() {
+      var loai = fv('t-loai'), ng = f('t-ng'), cao = f('t-cao'), sl = fi('t-sl');
+      var gia = loai === 'be' ? 120000 : 110000, m2 = ng * cao, m2calc, note;
+      if (loai === 'be') { m2calc = Math.max(Math.ceil(m2 * sl), 1); note = 'Tem bế: làm tròn lên ' + m2calc + ' m²'; }
+      else if (m2 > 1) { m2calc = m2 * sl; note = ''; }
+      else { var mn = Math.min(ng, cao); m2calc = mn * 1 * sl; note = 'Lỡ khổ: cạnh nhỏ × 1m'; }
+      var tot = m2calc * gia;
+      var h = row('Diện tích thực', Math.round(m2 * 100) / 100 + ' m²');
+      if (note) h += row('Ghi chú', note);
+      h += row('M² tính giá', m2calc + ' m²');
+      h += row('Đơn giá', fmt(gia) + '/m²');
+      h += rowTot('Tổng cộng', fmt(tot));
+      html('r-tem', h);
+    }
+
+    function cC() {
+      var kieu = fv('c-kieu');
+      document.getElementById('c-chuan').style.display = kieu === 'chuan' ? '' : 'none';
+      document.getElementById('c-vien').style.display = kieu === 'vien' ? '' : 'none';
+      document.getElementById('c-le').style.display = kieu === 'le' ? '' : 'none';
+      var h = '';
+      if (kieu === 'chuan') {
+        var m2 = f('c-ng') * f('c-cao') * fi('c-sl'), tot = m2 * 130000;
+        h = row('Diện tích', Math.round(m2 * 100) / 100 + ' m²') + row('Đơn giá', '130.000đ/m²') + rowTot('Tổng cộng', fmt(tot));
+      } else if (kieu === 'vien') {
+        var c = f('c-vcauh'), sl = fi('c-vsl');
+        var g = c < 0.1 ? 60000 : c < 0.3 ? 80000 : c < 0.4 ? 160000 : c < 0.6 ? 200000 : c < 0.7 ? 245000 : c < 0.8 ? 260000 : 350000;
+        h = row('Cạnh lớn nhất', c + ' m') + row('Giá khoán/cái', fmt(g)) + row('Số lượng', sl + ' cái') + rowTot('Tổng cộng', fmt(g * sl));
+      } else {
+        var kho = parseInt(fv('c-lkho')), tac = fi('c-ltac'), sl = fi('c-lsl'), gT = kho === 6 ? 10000 : 15000;
+        h = row('Giá/tấc', fmt(gT)) + row('Số tấc × số lượng', tac + ' × ' + sl) + rowTot('Tổng cộng', fmt(gT * tac * sl));
+      }
+      html('r-cat', h);
+    }
+
+    function cCV() {
+      var hop = fi('cv-hop'), gia, note;
+      if (hop < 5) { gia = 70000; note = ''; }
+      else if (hop === 5) { gia = 40000; note = 'Tròn 5 hộp'; }
+      else if (hop >= 10) { gia = 24000; note = '≥10 hộp'; }
+      else { gia = 70000; note = 'Chưa tròn 5 hộp'; }
+      var h = row('Số hộp', hop) + row('Đơn giá', fmt(gia) + '/hộp' + (note ? ' (' + note + ')' : ''));
+      h += rowTot('Tổng cộng', fmt(gia * hop));
+      html('r-card', h);
+    }
+
+    var bGia = { 'tole-in': [40000, 550000, 450000], 'tole-cat': [50000, 700000, 550000], 'form-in': [40000, 400000, 300000], 'form-cat': [50000, 600000, 450000], 'alu-in': [40000, 650000, 500000], 'alu-cat': [70000, 900000, 700000], 'mica-in': [40000, 1250000, 900000], 'mica-cat': [90000, 1500000, 1000000] };
+    function cB() {
+      var vl = fv('b-vl'), ng = f('b-ng'), cao = f('b-cao'), sl = fi('b-sl'), m2 = ng * cao;
+      var g = bGia[vl], gia, moc;
+      if (m2 <= 0.06) { gia = g[0]; moc = '≤0.06m²'; } else if (m2 < 0.5) { gia = g[1]; moc = '<0.5m²'; } else { gia = g[2]; moc = '≥1m²'; }
+      html('r-bang', row('Diện tích/cái', Math.round(m2 * 100) / 100 + ' m² (mốc: ' + moc + ')') + row('Đơn giá', fmt(gia) + '/cái') + row('Số lượng', sl) + rowTot('Tổng cộng', fmt(gia * sl)));
+    }
+
+    var satGia = { 'v16': 65000, 'v20': 85000, 'v25': 105000 };
+    function cV() {
+      var loai = fv('v-loai'), ng = f('v-ng'), cao = f('v-cao'), sl = fi('v-sl');
+      var sat = fv('v-sat'), chan = parseInt(fv('v-chan')), can = parseInt(fv('v-can'));
+      var m2 = ng * cao;
+      var giaDV, noteV;
+      if (loai === 'lua') {
+        if (ng < 1 && cao < 1) { giaDV = 150000; noteV = 'Nhỏ (<1×1): 150.000đ/m²'; }
+        else if (ng >= 1 && cao >= 1) { giaDV = 80000; noteV = 'Lớn (≥1×1): 80.000đ/m²'; }
+        else { giaDV = 110000; noteV = 'Vừa: 110.000đ/m²'; }
+      } else {
+        if (ng < 1 && cao < 1) { giaDV = 200000; noteV = 'Nhỏ (<1×1): 200.000đ/m²'; }
+        else if (ng >= 1 && cao >= 1) { giaDV = 120000; noteV = 'Lớn (≥1×1): 120.000đ/m²'; }
+        else { giaDV = 150000; noteV = 'Vừa: 150.000đ/m²'; }
+      }
+      var tienVai = m2 * giaDV * sl;
+      var tienSat = 0, tienChan = 0;
+      var satLabel = '';
+      if (sat !== '0') {
+        var gS = satGia[sat];
+        var chuvi = (ng * 2 + cao * 2);
+        tienSat = gS * chuvi * sl;
+        satLabel = sat.replace('v', 'Vuông ') + ' (' + fmt(gS) + '/m × chu vi ' + Math.round(chuvi * 100) / 100 + 'm)';
+        if (chan) { tienChan = gS * 2 * sl; satLabel += ' + 2 thanh chân'; }
+      }
+      var tienCan = can ? m2 * sl * 50000 : 0;
+      var tot = tienVai + tienSat + tienChan + tienCan;
+      var h = row('Diện tích', Math.round(m2 * 100) / 100 + ' m² (' + noteV + ')');
+      h += row('Tiền vải', fmt(tienVai));
+      if (tienSat) h += row('Khung sắt', fmt(tienSat) + (tienChan ? ' + chân ' + fmt(tienChan) : ''));
+      if (tienCan) h += row('Cán màng', fmt(tienCan));
+      h += rowTot('Tổng cộng × ' + sl, fmt(tot));
+      html('r-vai', h);
+    }
+
+    var giayPrices = {
+      a5: { day1: 5000, day2: null, bong1: null, bong2: null },
+      a4: { day1: 7000, day2: 13000, bong1: 9000, bong2: 17000 },
+      a3: { day1: 13000, day2: 24000, bong1: 16000, bong2: 30000 }
+    };
+    var epPrices = { a5: { 1: 10000, 2: 13000 }, a4: { 1: 20000, 2: 25000 }, a3: { 1: 35000, 2: 45000 } };
+    var roiA4 = {
+      100: [700000, 800000, 1100000, 1460000, 2010000, 3690000],
+      150: [760000, 860000, 1190000, 1580000, 2280000, 4360000],
+      200: [960000, 1110000, 1500000, 1920000, 3060000, 5960000]
+    };
+    var roiA4SL = [500, 1000, 2000, 3000, 5000, 10000];
+    var roiA5 = {
+      100: [null, 740000, 880000, 1260000, 1560000, 2080000, 3430000],
+      150: [null, 2440000, 970000, 1330000, 1780000, 2430000, 4310000],
+      200: [null, 1040000, 1200000, 1630000, 2130000, 2960000, 5160000]
+    };
+    var roiA5SL = [null, 1000, 2000, 4000, 6000, 10000, 20000];
+    function cG() {
+      var loai = fv('g-loai');
+      ['g-giay-fields', 'g-ep-fields', 'g-roi-a4-fields', 'g-roi-a5-fields', 'g-bangten-fields'].forEach(function (id) { document.getElementById(id).style.display = 'none' });
+      var h = '';
+      if (loai === 'giay') {
+        document.getElementById('g-giay-fields').style.display = '';
+        var kho = fv('g-kho'), tp = fv('g-giay-tp'), to = fi('g-to');
+        var gia = giayPrices[kho][tp];
+        if (!gia) { h = row('Thông báo', 'Khổ/loại này chưa có giá'); html('r-giay', h); return; }
+        h = row('Đơn giá', fmt(gia) + '/tờ') + row('Số tờ', to) + rowTot('Tổng cộng', fmt(gia * to));
+      } else if (loai === 'ep') {
+        document.getElementById('g-ep-fields').style.display = '';
+        var kho = fv('g-ep-kho'), mat = fv('g-ep-mat'), to = fi('g-ep-to');
+        var gia = epPrices[kho][parseInt(mat)];
+        h = row('Đơn giá', fmt(gia) + '/tờ') + row('Số tờ', to) + rowTot('Tổng cộng', fmt(gia * to));
+      } else if (loai === 'roi-a4') {
+        document.getElementById('g-roi-a4-fields').style.display = '';
+        var dlIdx = parseInt(fv('g-ra4-dl')), sl = parseInt(fv('g-ra4-sl'));
+        var dlKey = [100, 150, 200][dlIdx];
+        var slIdx = roiA4SL.indexOf(sl);
+        if (slIdx < 0) { h = row('Lỗi', 'Số lượng không hợp lệ'); html('r-giay', h); return; }
+        var gia = roiA4[dlKey][slIdx];
+        h = row('Khổ', 'A4 — Couche ' + dlKey + 'g') + row('Số lượng', sl.toLocaleString('vi-VN') + ' tờ') + row('Đơn giá lô', fmt(gia)) + rowTot('Tổng cộng', fmt(gia));
+      } else if (loai === 'roi-a5') {
+        document.getElementById('g-roi-a5-fields').style.display = '';
+        var dlIdx = parseInt(fv('g-ra5-dl')), sl = parseInt(fv('g-ra5-sl'));
+        var dlKey = [100, 150, 200][dlIdx];
+        var slIdx = roiA5SL.indexOf(sl);
+        if (slIdx < 0 || !roiA5[dlKey][slIdx]) { h = row('Thông báo', 'Không nhận số lượng này'); html('r-giay', h); return; }
+        var gia = roiA5[dlKey][slIdx];
+        h = row('Khổ', 'A5 — Couche ' + dlKey + 'g') + row('Số lượng', sl.toLocaleString('vi-VN') + ' tờ') + row('Đơn giá lô', fmt(gia)) + rowTot('Tổng cộng', fmt(gia));
+      } else if (loai === 'bangten') {
+        document.getElementById('g-bangten-fields').style.display = '';
+        var loai2 = fv('g-bt-loai'), mau = fv('g-bt-mau'), sl = fi('g-bt-sl');
+        var tbl = { '35k': { lt5: 75000, gt5: 65000, gt10: 55000 }, '50k': { lt5: 105000, gt5: 95000, gt10: 85000 } };
+        var base = loai2 === '35k' ? 35000 : 50000;
+        var extra = tbl[loai2][mau];
+        h = row('Giá nền', fmt(base) + '/cái') + row('Giá in ảnh', fmt(extra - base)) + row('Đơn giá/cái', fmt(extra)) + row('Số lượng', sl) + rowTot('Tổng cộng', fmt(extra * sl));
+      }
+      html('r-giay', h);
+    }
+
+    var tranhPrices = {
+      'A4 (20×30cm)': [790000, 90000], 'A3 (30×40cm)': [905000, 100000], 'A2 (40×60cm)': [1120000, 115000],
+      'A1 (60×80cm)': [1540000, 160000], '50×70cm': [1450000, 140000], '60×90cm': [1631000, 170000],
+      '30×120cm': [1654000, 139000], '60×120cm': [1908000, 193000], '80×120cm': [2194000, 229000]
+    };
+    function cTr() {
+      var vals = fv('tr-kho').split(','), goi = fv('tr-goi'), sl = fi('tr-sl');
+      var gFull = parseInt(vals[0]), gIn = parseInt(vals[1]);
+      var gia = goi === 'full' ? gFull : gIn;
+      var note = goi === 'full' ? 'Trọn gói (khung + đèn + in)' : 'Chỉ in (không khung)';
+      html('r-tranh', row('Gói', note) + row('Đơn giá/cái', fmt(gia)) + row('Số lượng', sl) + rowTot('Tổng cộng', fmt(gia * sl)));
+    }
+
+    var snGia = {
+      '25x15': { anmon: null, noi: null, chunoi: 650000 },
+      '30x20': { anmon: 520000, noi: 750000, chunoi: 1000000 },
+      '35x25': { anmon: null, noi: 850000, chunoi: 1040000 },
+      '40x30': { anmon: 850000, noi: null, chunoi: null },
+      '60x40': { anmon: 1250000, noi: null, chunoi: null }
+    };
+    function cSN() {
+      var k = fv('sn-khoct'), l = fv('sn-loai'), sl = fi('sn-sl');
+      var gia = snGia[k][l];
+      var h;
+      if (!gia) { h = row('Thông báo', 'Kích thước/loại này chưa có giá'); }
+      else { h = row('Đơn giá/cái', fmt(gia)) + row('Số lượng', sl) + rowTot('Tổng cộng', fmt(gia * sl)); }
+      html('r-sn', h);
+    }
+
+    function cPP() {
+      var dv = fv('pp-dv');
+      document.getElementById('pp-m2r').style.display = dv === 'lua' ? 'none' : '';
+      var h;
+      if (dv === 'lua') { h = row('Dịch vụ', 'Bảng lụa có chân (khoán)') + rowTot('Tổng cộng', '650.000đ'); }
+      else { var m2 = f('pp-m2'); h = row('Diện tích', m2 + ' m²') + row('Đơn giá', '50.000đ/m²') + rowTot('Tổng cộng', fmt(m2 * 50000)); }
+      html('r-phu', h);
+    }
+
+    cD(); cT(); cC(); cCV(); cB(); cV(); cG(); cTr(); cSN(); cPP();
+  </script>
+
+</body>
+
+</html>
