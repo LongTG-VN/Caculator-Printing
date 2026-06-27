@@ -702,7 +702,6 @@
         });
 
         var wRoll, lRoll, noteRoll;
-        var printArea = m2_pad * sl;
         var rollArea;
 
         if (bestLayout) {
@@ -717,16 +716,22 @@
           rollArea = wRoll * lRoll;
         }
 
-        var leftoverArea = Math.max(0, rollArea - printArea);
-        var costPerItem = (m2_pad * 100000) + (((rollArea / sl) - m2_pad) * 35000);
-        tienVai = costPerItem * sl;
+        var activePrintArea = ng * cao * sl;
+        var paddedArea = w_pad * h_pad * sl;
+        var marginArea = Math.max(0, paddedArea - activePrintArea);
+        var leftoverArea = Math.max(0, rollArea - paddedArea);
 
+        tienVai = (activePrintArea * 100000) + (marginArea * 35000) + (leftoverArea * 35000);
+
+        h += row('Kích thước thành phẩm', ng.toFixed(2) + 'm × ' + cao.toFixed(2) + 'm');
         h += row('Kích thước in (gồm lề)', w_pad.toFixed(2) + 'm × ' + h_pad.toFixed(2) + 'm');
         h += row('Khổ vải chọn', noteRoll);
-        h += row('Tổng diện tích in', (Math.round(printArea * 100) / 100) + ' m²');
+        h += row('Diện tích in thực tế', (Math.round(activePrintArea * 100) / 100) + ' m²');
+        if (marginArea > 0.001) {
+          h += row('Diện tích căn khung', (Math.round(marginArea * 100) / 100) + ' m² (' + fmt(marginArea * 35000) + ')');
+        }
         if (leftoverArea > 0.001) {
-          h += row('Tổng diện tích tiêu hao', (Math.round(rollArea * 100) / 100) + ' m²');
-          h += row('Phần vải thừa', (Math.round(leftoverArea * 100) / 100) + ' m² (' + fmt(leftoverArea * 35000) + ')');
+          h += row('Diện tích hao khổ', (Math.round(leftoverArea * 100) / 100) + ' m² (' + fmt(leftoverArea * 35000) + ')');
         }
       } else {
         if (loai === 'lua') {
@@ -738,8 +743,18 @@
           else if (ng >= 1 && cao >= 1) { giaDV = 120000; noteV = 'Lớn (≥1×1): 120.000đ/m²'; }
           else { giaDV = 150000; noteV = 'Vừa: 150.000đ/m²'; }
         }
-        tienVai = m2_pad * giaDV * sl;
-        h += row('Diện tích thực (gồm lề)', (Math.round(m2_pad * 100) / 100) + ' m² (' + noteV + ')');
+        var activePrintArea = ng * cao * sl;
+        var paddedArea = w_pad * h_pad * sl;
+        var marginArea = Math.max(0, paddedArea - activePrintArea);
+
+        tienVai = (activePrintArea * giaDV) + (marginArea * 35000);
+
+        h += row('Kích thước thành phẩm', ng.toFixed(2) + 'm × ' + cao.toFixed(2) + 'm');
+        h += row('Kích thước in (gồm lề)', w_pad.toFixed(2) + 'm × ' + h_pad.toFixed(2) + 'm');
+        h += row('Diện tích in thực tế', (Math.round(activePrintArea * 100) / 100) + ' m² (' + noteV + ')');
+        if (marginArea > 0.001) {
+          h += row('Diện tích căn khung', (Math.round(marginArea * 100) / 100) + ' m² (' + fmt(marginArea * 35000) + ')');
+        }
       }
 
       var tienSat = 0, tienChan = 0;
