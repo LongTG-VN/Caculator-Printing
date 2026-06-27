@@ -330,6 +330,7 @@
         <div class="row"><label>Loại vải</label>
           <select id="v-loai" onchange="cV()">
             <option value="lua">Lụa thường (Hiflex)</option>
+            <option value="xuyenden">Vải xuyên đèn</option>
             <option value="decal">Decal dán vải</option>
           </select>
         </div>
@@ -645,16 +646,60 @@
       var sat = fv('v-sat'), chan = parseInt(fv('v-chan')), can = parseInt(fv('v-can'));
       var m2 = ng * cao;
       var giaDV, noteV;
-      if (loai === 'lua') {
-        if (ng < 1 && cao < 1) { giaDV = 150000; noteV = 'Nhỏ (<1×1): 150.000đ/m²'; }
-        else if (ng >= 1 && cao >= 1) { giaDV = 80000; noteV = 'Lớn (≥1×1): 80.000đ/m²'; }
-        else { giaDV = 110000; noteV = 'Vừa: 110.000đ/m²'; }
+      var tienVai = 0;
+      var h = '';
+
+      if (loai === 'xuyenden') {
+        var wA = 0, wB = 0;
+        var areaA = Infinity, areaB = Infinity;
+        if (cao <= 1.4) { wA = 1.4; areaA = 1.4 * ng; }
+        else if (cao <= 1.8) { wA = 1.8; areaA = 1.8 * ng; }
+        if (ng <= 1.4) { wB = 1.4; areaB = 1.4 * cao; }
+        else if (ng <= 1.8) { wB = 1.8; areaB = 1.8 * cao; }
+
+        var wRoll, lRoll, noteRoll;
+        if (areaA !== Infinity || areaB !== Infinity) {
+          if (areaA <= areaB) {
+            wRoll = wA;
+            lRoll = ng;
+            noteRoll = 'Khổ ' + wRoll + 'm (xoay dọc)';
+          } else {
+            wRoll = wB;
+            lRoll = cao;
+            noteRoll = 'Khổ ' + wRoll + 'm (xoay ngang)';
+          }
+        } else {
+          wRoll = Math.min(ng, cao);
+          lRoll = Math.max(ng, cao);
+          noteRoll = 'Ghép nối (vượt khổ 1.8m)';
+        }
+
+        var printArea = ng * cao;
+        var rollArea = wRoll * lRoll;
+        var leftoverArea = Math.max(0, rollArea - printArea);
+        var costPerItem = (printArea * 100000) + (leftoverArea * 35000);
+        tienVai = costPerItem * sl;
+
+        h += row('Diện tích thực', (Math.round(printArea * 100) / 100) + ' m²');
+        h += row('Khổ vải chọn', noteRoll);
+        if (leftoverArea > 0.001) {
+          h += row('Dòng hao phí', (Math.round(rollArea * 100) / 100) + ' m² (tiêu hao)');
+          h += row('Phần vải thừa', (Math.round(leftoverArea * 100) / 100) + ' m² (' + fmt(leftoverArea * 35000) + ')');
+        }
       } else {
-        if (ng < 1 && cao < 1) { giaDV = 200000; noteV = 'Nhỏ (<1×1): 200.000đ/m²'; }
-        else if (ng >= 1 && cao >= 1) { giaDV = 120000; noteV = 'Lớn (≥1×1): 120.000đ/m²'; }
-        else { giaDV = 150000; noteV = 'Vừa: 150.000đ/m²'; }
+        if (loai === 'lua') {
+          if (ng < 1 && cao < 1) { giaDV = 150000; noteV = 'Nhỏ (<1×1): 150.000đ/m²'; }
+          else if (ng >= 1 && cao >= 1) { giaDV = 80000; noteV = 'Lớn (≥1×1): 80.000đ/m²'; }
+          else { giaDV = 110000; noteV = 'Vừa: 110.000đ/m²'; }
+        } else {
+          if (ng < 1 && cao < 1) { giaDV = 200000; noteV = 'Nhỏ (<1×1): 200.000đ/m²'; }
+          else if (ng >= 1 && cao >= 1) { giaDV = 120000; noteV = 'Lớn (≥1×1): 120.000đ/m²'; }
+          else { giaDV = 150000; noteV = 'Vừa: 150.000đ/m²'; }
+        }
+        tienVai = m2 * giaDV * sl;
+        h += row('Diện tích', (Math.round(m2 * 100) / 100) + ' m² (' + noteV + ')');
       }
-      var tienVai = m2 * giaDV * sl;
+
       var tienSat = 0, tienChan = 0;
       var satLabel = '';
       if (sat !== '0') {
@@ -666,7 +711,6 @@
       }
       var tienCan = can ? m2 * sl * 50000 : 0;
       var tot = tienVai + tienSat + tienChan + tienCan;
-      var h = row('Diện tích', Math.round(m2 * 100) / 100 + ' m² (' + noteV + ')');
       h += row('Tiền vải', fmt(tienVai));
       if (tienSat) h += row('Khung sắt', fmt(tienSat) + (tienChan ? ' + chân ' + fmt(tienChan) : ''));
       if (tienCan) h += row('Cán màng', fmt(tienCan));
