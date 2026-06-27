@@ -360,6 +360,13 @@
             <option value="1">Có (+50.000đ/m²)</option>
           </select>
         </div>
+        <div class="row"><label>Căn khung biên</label>
+          <select id="v-margin" onchange="cV()">
+            <option value="0">Không căn khung (in sát mép)</option>
+            <option value="0.05" selected>Căn khung 5cm mỗi cạnh (+10cm)</option>
+            <option value="0.10">Căn khung 10cm mỗi cạnh (+20cm)</option>
+          </select>
+        </div>
         <div id="r-vai" class="res"></div>
       </div>
     </div>
@@ -563,7 +570,7 @@
       document.getElementById('p-' + id).classList.add('active');
     }
     function fmt(n) { return Math.round(n).toLocaleString('vi-VN') + 'đ' }
-    function f(id) { return parseFloat(document.getElementById(id).value) || 0 }
+    function f(id) { var val = document.getElementById(id).value.replace(',', '.'); return parseFloat(val) || 0 }
     function fi(id) { return parseInt(document.getElementById(id).value) || 1 }
     function fv(id) { return document.getElementById(id).value }
     function html(id, s) { document.getElementById(id).innerHTML = s }
@@ -644,46 +651,81 @@
     function cV() {
       var loai = fv('v-loai'), ng = f('v-ng'), cao = f('v-cao'), sl = fi('v-sl');
       var sat = fv('v-sat'), chan = parseInt(fv('v-chan')), can = parseInt(fv('v-can'));
-      var m2 = ng * cao;
+      var margin = f('v-margin');
+      var w_pad = Math.round((ng + 2 * margin) * 1000) / 1000;
+      var h_pad = Math.round((cao + 2 * margin) * 1000) / 1000;
+      var m2_pad = w_pad * h_pad;
       var giaDV, noteV;
       var tienVai = 0;
       var h = '';
 
       if (loai === 'xuyenden') {
-        var wA = 0, wB = 0;
-        var areaA = Infinity, areaB = Infinity;
-        if (cao <= 1.4) { wA = 1.4; areaA = 1.4 * ng; }
-        else if (cao <= 1.8) { wA = 1.8; areaA = 1.8 * ng; }
-        if (ng <= 1.4) { wB = 1.4; areaB = 1.4 * cao; }
-        else if (ng <= 1.8) { wB = 1.8; areaB = 1.8 * cao; }
+        var rolls = [1.4, 1.8];
+        var bestLayout = null;
+        var minArea = Infinity;
+
+        rolls.forEach(function (R) {
+          if (w_pad <= R) {
+            var k = Math.floor(R / w_pad);
+            var rows = Math.ceil(sl / k);
+            var L = rows * h_pad;
+            var area = R * L;
+            if (area < minArea) {
+              minArea = area;
+              bestLayout = {
+                roll: R,
+                wRoll: R,
+                lRoll: L,
+                k: k,
+                rows: rows,
+                note: 'Khổ ' + R + 'm (xoay dọc, xếp ' + k + ' tấm/hàng)'
+              };
+            }
+          }
+          if (h_pad <= R) {
+            var k = Math.floor(R / h_pad);
+            var rows = Math.ceil(sl / k);
+            var L = rows * w_pad;
+            var area = R * L;
+            if (area < minArea) {
+              minArea = area;
+              bestLayout = {
+                roll: R,
+                wRoll: R,
+                lRoll: L,
+                k: k,
+                rows: rows,
+                note: 'Khổ ' + R + 'm (xoay ngang, xếp ' + k + ' tấm/hàng)'
+              };
+            }
+          }
+        });
 
         var wRoll, lRoll, noteRoll;
-        if (areaA !== Infinity || areaB !== Infinity) {
-          if (areaA <= areaB) {
-            wRoll = wA;
-            lRoll = ng;
-            noteRoll = 'Khổ ' + wRoll + 'm (xoay dọc)';
-          } else {
-            wRoll = wB;
-            lRoll = cao;
-            noteRoll = 'Khổ ' + wRoll + 'm (xoay ngang)';
-          }
+        var printArea = m2_pad * sl;
+        var rollArea;
+
+        if (bestLayout) {
+          wRoll = bestLayout.wRoll;
+          lRoll = bestLayout.lRoll;
+          noteRoll = bestLayout.note;
+          rollArea = minArea;
         } else {
-          wRoll = Math.min(ng, cao);
-          lRoll = Math.max(ng, cao);
+          wRoll = Math.min(w_pad, h_pad);
+          lRoll = Math.max(w_pad, h_pad) * sl;
           noteRoll = 'Ghép nối (vượt khổ 1.8m)';
+          rollArea = wRoll * lRoll;
         }
 
-        var printArea = ng * cao;
-        var rollArea = wRoll * lRoll;
         var leftoverArea = Math.max(0, rollArea - printArea);
-        var costPerItem = (printArea * 100000) + (leftoverArea * 35000);
+        var costPerItem = (m2_pad * 100000) + (((rollArea / sl) - m2_pad) * 35000);
         tienVai = costPerItem * sl;
 
-        h += row('Diện tích thực', (Math.round(printArea * 100) / 100) + ' m²');
+        h += row('Kích thước in (gồm lề)', w_pad.toFixed(2) + 'm × ' + h_pad.toFixed(2) + 'm');
         h += row('Khổ vải chọn', noteRoll);
+        h += row('Tổng diện tích in', (Math.round(printArea * 100) / 100) + ' m²');
         if (leftoverArea > 0.001) {
-          h += row('Dòng hao phí', (Math.round(rollArea * 100) / 100) + ' m² (tiêu hao)');
+          h += row('Tổng diện tích tiêu hao', (Math.round(rollArea * 100) / 100) + ' m²');
           h += row('Phần vải thừa', (Math.round(leftoverArea * 100) / 100) + ' m² (' + fmt(leftoverArea * 35000) + ')');
         }
       } else {
@@ -696,8 +738,8 @@
           else if (ng >= 1 && cao >= 1) { giaDV = 120000; noteV = 'Lớn (≥1×1): 120.000đ/m²'; }
           else { giaDV = 150000; noteV = 'Vừa: 150.000đ/m²'; }
         }
-        tienVai = m2 * giaDV * sl;
-        h += row('Diện tích', (Math.round(m2 * 100) / 100) + ' m² (' + noteV + ')');
+        tienVai = m2_pad * giaDV * sl;
+        h += row('Diện tích thực (gồm lề)', (Math.round(m2_pad * 100) / 100) + ' m² (' + noteV + ')');
       }
 
       var tienSat = 0, tienChan = 0;
@@ -709,7 +751,7 @@
         satLabel = sat.replace('v', 'Vuông ') + ' (' + fmt(gS) + '/m × chu vi ' + Math.round(chuvi * 100) / 100 + 'm)';
         if (chan) { tienChan = gS * 2 * sl; satLabel += ' + 2 thanh chân'; }
       }
-      var tienCan = can ? m2 * sl * 50000 : 0;
+      var tienCan = can ? m2_pad * sl * 50000 : 0;
       var tot = tienVai + tienSat + tienChan + tienCan;
       h += row('Tiền vải', fmt(tienVai));
       if (tienSat) h += row('Khung sắt', fmt(tienSat) + (tienChan ? ' + chân ' + fmt(tienChan) : ''));
