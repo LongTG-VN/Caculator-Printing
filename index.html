@@ -584,12 +584,7 @@
       if (!over) { var mn = Math.min(ng, cao); m2calc = mn * 1 * sl; note = 'Lỡ khổ: cạnh nhỏ (' + mn + 'm) × 1m × ' + sl; }
       else { m2calc = m2t * 1.2; note = 'Quá khổ: ' + Math.round(m2t * 100) / 100 + ' m² × 1.2 (phụ phí 20%)'; }
       var tIn = m2calc * gia, tCan = can ? m2calc * can : 0, tot = tIn + tCan;
-      var h = row('Diện tích thực', Math.round(m2t * 100) / 100 + ' m²');
-      h += row('Ghi chú', note);
-      h += row('M² tính giá', Math.round(m2calc * 100) / 100 + ' m²');
-      h += row('Tiền in', fmt(tIn));
-      if (tCan) h += row('Cán màng', fmt(tCan));
-      h += rowTot('Tổng cộng', fmt(tot));
+      var h = rowTot('Tổng cộng', fmt(tot));
       html('r-decal', h);
     }
 
@@ -600,11 +595,7 @@
       else if (m2 > 1) { m2calc = m2 * sl; note = ''; }
       else { var mn = Math.min(ng, cao); m2calc = mn * 1 * sl; note = 'Lỡ khổ: cạnh nhỏ × 1m'; }
       var tot = m2calc * gia;
-      var h = row('Diện tích thực', Math.round(m2 * 100) / 100 + ' m²');
-      if (note) h += row('Ghi chú', note);
-      h += row('M² tính giá', m2calc + ' m²');
-      h += row('Đơn giá', fmt(gia) + '/m²');
-      h += rowTot('Tổng cộng', fmt(tot));
+      var h = rowTot('Tổng cộng', fmt(tot));
       html('r-tem', h);
     }
 
@@ -616,14 +607,14 @@
       var h = '';
       if (kieu === 'chuan') {
         var m2 = f('c-ng') * f('c-cao') * fi('c-sl'), tot = m2 * 130000;
-        h = row('Diện tích', Math.round(m2 * 100) / 100 + ' m²') + row('Đơn giá', '130.000đ/m²') + rowTot('Tổng cộng', fmt(tot));
+        h = rowTot('Tổng cộng', fmt(tot));
       } else if (kieu === 'vien') {
         var c = f('c-vcauh'), sl = fi('c-vsl');
         var g = c < 0.1 ? 60000 : c < 0.3 ? 80000 : c < 0.4 ? 160000 : c < 0.6 ? 200000 : c < 0.7 ? 245000 : c < 0.8 ? 260000 : 350000;
-        h = row('Cạnh lớn nhất', c + ' m') + row('Giá khoán/cái', fmt(g)) + row('Số lượng', sl + ' cái') + rowTot('Tổng cộng', fmt(g * sl));
+        h = rowTot('Tổng cộng', fmt(g * sl));
       } else {
         var kho = parseInt(fv('c-lkho')), tac = fi('c-ltac'), sl = fi('c-lsl'), gT = kho === 6 ? 10000 : 15000;
-        h = row('Giá/tấc', fmt(gT)) + row('Số tấc × số lượng', tac + ' × ' + sl) + rowTot('Tổng cộng', fmt(gT * tac * sl));
+        h = rowTot('Tổng cộng', fmt(gT * tac * sl));
       }
       html('r-cat', h);
     }
@@ -634,8 +625,7 @@
       else if (hop === 5) { gia = 40000; note = 'Tròn 5 hộp'; }
       else if (hop >= 10) { gia = 24000; note = '≥10 hộp'; }
       else { gia = 70000; note = 'Chưa tròn 5 hộp'; }
-      var h = row('Số hộp', hop) + row('Đơn giá', fmt(gia) + '/hộp' + (note ? ' (' + note + ')' : ''));
-      h += rowTot('Tổng cộng', fmt(gia * hop));
+      var h = rowTot('Tổng cộng', fmt(gia * hop));
       html('r-card', h);
     }
 
@@ -644,7 +634,7 @@
       var vl = fv('b-vl'), ng = f('b-ng'), cao = f('b-cao'), sl = fi('b-sl'), m2 = ng * cao;
       var g = bGia[vl], gia, moc;
       if (m2 <= 0.06) { gia = g[0]; moc = '≤0.06m²'; } else if (m2 < 0.5) { gia = g[1]; moc = '<0.5m²'; } else { gia = g[2]; moc = '≥1m²'; }
-      html('r-bang', row('Diện tích/cái', Math.round(m2 * 100) / 100 + ' m² (mốc: ' + moc + ')') + row('Đơn giá', fmt(gia) + '/cái') + row('Số lượng', sl) + rowTot('Tổng cộng', fmt(gia * sl)));
+      html('r-bang', rowTot('Tổng cộng', fmt(gia * sl)));
     }
 
     var satGia = { 'v16': 65000, 'v20': 85000, 'v25': 105000 };
@@ -655,9 +645,8 @@
       var w_pad = Math.round((ng + 2 * margin) * 1000) / 1000;
       var h_pad = Math.round((cao + 2 * margin) * 1000) / 1000;
       var m2_pad = w_pad * h_pad;
-      var giaDV, noteV;
+      var giaDV;
       var tienVai = 0;
-      var h = '';
 
       if (loai === 'xuyenden') {
         var rolls = [1.4, 1.8];
@@ -701,18 +690,16 @@
           }
         });
 
-        var wRoll, lRoll, noteRoll;
+        var wRoll, lRoll;
         var rollArea;
 
         if (bestLayout) {
           wRoll = bestLayout.wRoll;
           lRoll = bestLayout.lRoll;
-          noteRoll = bestLayout.note;
           rollArea = minArea;
         } else {
           wRoll = Math.min(w_pad, h_pad);
           lRoll = Math.max(w_pad, h_pad) * sl;
-          noteRoll = 'Ghép nối (vượt khổ 1.8m)';
           rollArea = wRoll * lRoll;
         }
 
@@ -722,56 +709,33 @@
         var leftoverArea = Math.max(0, rollArea - paddedArea);
 
         tienVai = (activePrintArea * 100000) + (marginArea * 35000) + (leftoverArea * 35000);
-
-        h += row('Kích thước thành phẩm', ng.toFixed(2) + 'm × ' + cao.toFixed(2) + 'm');
-        h += row('Kích thước in (gồm lề)', w_pad.toFixed(2) + 'm × ' + h_pad.toFixed(2) + 'm');
-        h += row('Khổ vải chọn', noteRoll);
-        h += row('Diện tích in thực tế', (Math.round(activePrintArea * 100) / 100) + ' m²');
-        if (marginArea > 0.001) {
-          h += row('Diện tích căn khung', (Math.round(marginArea * 100) / 100) + ' m² (' + fmt(marginArea * 35000) + ')');
-        }
-        if (leftoverArea > 0.001) {
-          h += row('Diện tích hao khổ', (Math.round(leftoverArea * 100) / 100) + ' m² (' + fmt(leftoverArea * 35000) + ')');
-        }
       } else {
         if (loai === 'lua') {
-          if (ng < 1 && cao < 1) { giaDV = 150000; noteV = 'Nhỏ (<1×1): 150.000đ/m²'; }
-          else if (ng >= 1 && cao >= 1) { giaDV = 80000; noteV = 'Lớn (≥1×1): 80.000đ/m²'; }
-          else { giaDV = 110000; noteV = 'Vừa: 110.000đ/m²'; }
+          if (ng < 1 && cao < 1) { giaDV = 150000; }
+          else if (ng >= 1 && cao >= 1) { giaDV = 80000; }
+          else { giaDV = 110000; }
         } else {
-          if (ng < 1 && cao < 1) { giaDV = 200000; noteV = 'Nhỏ (<1×1): 200.000đ/m²'; }
-          else if (ng >= 1 && cao >= 1) { giaDV = 120000; noteV = 'Lớn (≥1×1): 120.000đ/m²'; }
-          else { giaDV = 150000; noteV = 'Vừa: 150.000đ/m²'; }
+          if (ng < 1 && cao < 1) { giaDV = 200000; }
+          else if (ng >= 1 && cao >= 1) { giaDV = 120000; }
+          else { giaDV = 150000; }
         }
         var activePrintArea = ng * cao * sl;
         var paddedArea = w_pad * h_pad * sl;
         var marginArea = Math.max(0, paddedArea - activePrintArea);
 
         tienVai = (activePrintArea * giaDV) + (marginArea * 35000);
-
-        h += row('Kích thước thành phẩm', ng.toFixed(2) + 'm × ' + cao.toFixed(2) + 'm');
-        h += row('Kích thước in (gồm lề)', w_pad.toFixed(2) + 'm × ' + h_pad.toFixed(2) + 'm');
-        h += row('Diện tích in thực tế', (Math.round(activePrintArea * 100) / 100) + ' m² (' + noteV + ')');
-        if (marginArea > 0.001) {
-          h += row('Diện tích căn khung', (Math.round(marginArea * 100) / 100) + ' m² (' + fmt(marginArea * 35000) + ')');
-        }
       }
 
       var tienSat = 0, tienChan = 0;
-      var satLabel = '';
       if (sat !== '0') {
         var gS = satGia[sat];
         var chuvi = (ng * 2 + cao * 2);
         tienSat = gS * chuvi * sl;
-        satLabel = sat.replace('v', 'Vuông ') + ' (' + fmt(gS) + '/m × chu vi ' + Math.round(chuvi * 100) / 100 + 'm)';
-        if (chan) { tienChan = gS * 2 * sl; satLabel += ' + 2 thanh chân'; }
+        if (chan) { tienChan = gS * 2 * sl; }
       }
       var tienCan = can ? m2_pad * sl * 50000 : 0;
       var tot = tienVai + tienSat + tienChan + tienCan;
-      h += row('Tiền vải', fmt(tienVai));
-      if (tienSat) h += row('Khung sắt', fmt(tienSat) + (tienChan ? ' + chân ' + fmt(tienChan) : ''));
-      if (tienCan) h += row('Cán màng', fmt(tienCan));
-      h += rowTot('Tổng cộng × ' + sl, fmt(tot));
+      var h = rowTot('Tổng cộng × ' + sl, fmt(tot));
       html('r-vai', h);
     }
 
@@ -802,12 +766,12 @@
         var kho = fv('g-kho'), tp = fv('g-giay-tp'), to = fi('g-to');
         var gia = giayPrices[kho][tp];
         if (!gia) { h = row('Thông báo', 'Khổ/loại này chưa có giá'); html('r-giay', h); return; }
-        h = row('Đơn giá', fmt(gia) + '/tờ') + row('Số tờ', to) + rowTot('Tổng cộng', fmt(gia * to));
+        h = rowTot('Tổng cộng', fmt(gia * to));
       } else if (loai === 'ep') {
         document.getElementById('g-ep-fields').style.display = '';
         var kho = fv('g-ep-kho'), mat = fv('g-ep-mat'), to = fi('g-ep-to');
         var gia = epPrices[kho][parseInt(mat)];
-        h = row('Đơn giá', fmt(gia) + '/tờ') + row('Số tờ', to) + rowTot('Tổng cộng', fmt(gia * to));
+        h = rowTot('Tổng cộng', fmt(gia * to));
       } else if (loai === 'roi-a4') {
         document.getElementById('g-roi-a4-fields').style.display = '';
         var dlIdx = parseInt(fv('g-ra4-dl')), sl = parseInt(fv('g-ra4-sl'));
@@ -815,7 +779,7 @@
         var slIdx = roiA4SL.indexOf(sl);
         if (slIdx < 0) { h = row('Lỗi', 'Số lượng không hợp lệ'); html('r-giay', h); return; }
         var gia = roiA4[dlKey][slIdx];
-        h = row('Khổ', 'A4 — Couche ' + dlKey + 'g') + row('Số lượng', sl.toLocaleString('vi-VN') + ' tờ') + row('Đơn giá lô', fmt(gia)) + rowTot('Tổng cộng', fmt(gia));
+        h = rowTot('Tổng cộng', fmt(gia));
       } else if (loai === 'roi-a5') {
         document.getElementById('g-roi-a5-fields').style.display = '';
         var dlIdx = parseInt(fv('g-ra5-dl')), sl = parseInt(fv('g-ra5-sl'));
@@ -823,14 +787,14 @@
         var slIdx = roiA5SL.indexOf(sl);
         if (slIdx < 0 || !roiA5[dlKey][slIdx]) { h = row('Thông báo', 'Không nhận số lượng này'); html('r-giay', h); return; }
         var gia = roiA5[dlKey][slIdx];
-        h = row('Khổ', 'A5 — Couche ' + dlKey + 'g') + row('Số lượng', sl.toLocaleString('vi-VN') + ' tờ') + row('Đơn giá lô', fmt(gia)) + rowTot('Tổng cộng', fmt(gia));
+        h = rowTot('Tổng cộng', fmt(gia));
       } else if (loai === 'bangten') {
         document.getElementById('g-bangten-fields').style.display = '';
         var loai2 = fv('g-bt-loai'), mau = fv('g-bt-mau'), sl = fi('g-bt-sl');
         var tbl = { '35k': { lt5: 75000, gt5: 65000, gt10: 55000 }, '50k': { lt5: 105000, gt5: 95000, gt10: 85000 } };
         var base = loai2 === '35k' ? 35000 : 50000;
         var extra = tbl[loai2][mau];
-        h = row('Giá nền', fmt(base) + '/cái') + row('Giá in ảnh', fmt(extra - base)) + row('Đơn giá/cái', fmt(extra)) + row('Số lượng', sl) + rowTot('Tổng cộng', fmt(extra * sl));
+        h = rowTot('Tổng cộng', fmt(extra * sl));
       }
       html('r-giay', h);
     }
@@ -845,7 +809,7 @@
       var gFull = parseInt(vals[0]), gIn = parseInt(vals[1]);
       var gia = goi === 'full' ? gFull : gIn;
       var note = goi === 'full' ? 'Trọn gói (khung + đèn + in)' : 'Chỉ in (không khung)';
-      html('r-tranh', row('Gói', note) + row('Đơn giá/cái', fmt(gia)) + row('Số lượng', sl) + rowTot('Tổng cộng', fmt(gia * sl)));
+      html('r-tranh', rowTot('Tổng cộng', fmt(gia * sl)));
     }
 
     var snGia = {
@@ -860,7 +824,7 @@
       var gia = snGia[k][l];
       var h;
       if (!gia) { h = row('Thông báo', 'Kích thước/loại này chưa có giá'); }
-      else { h = row('Đơn giá/cái', fmt(gia)) + row('Số lượng', sl) + rowTot('Tổng cộng', fmt(gia * sl)); }
+      else { h = rowTot('Tổng cộng', fmt(gia * sl)); }
       html('r-sn', h);
     }
 
@@ -868,8 +832,8 @@
       var dv = fv('pp-dv');
       document.getElementById('pp-m2r').style.display = dv === 'lua' ? 'none' : '';
       var h;
-      if (dv === 'lua') { h = row('Dịch vụ', 'Bảng lụa có chân (khoán)') + rowTot('Tổng cộng', '650.000đ'); }
-      else { var m2 = f('pp-m2'); h = row('Diện tích', m2 + ' m²') + row('Đơn giá', '50.000đ/m²') + rowTot('Tổng cộng', fmt(m2 * 50000)); }
+      if (dv === 'lua') { h = rowTot('Tổng cộng', '650.000đ'); }
+      else { var m2 = f('pp-m2'); h = rowTot('Tổng cộng', fmt(m2 * 50000)); }
       html('r-phu', h);
     }
 
